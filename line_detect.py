@@ -63,6 +63,21 @@ def findBoundingBox(lines, width, height):
 
     return (minX, minY, maxX, maxY)
 
+# This function determines whether the birdie is in or out of bounds
+def isInbound(lines,cMinX, cMinY, cMaxX, cMaxY, bMinX, bMinY, bMaxX, bMaxY):
+    if ((cMinX <= bMinX <= cMaxX) and \
+        (cMinY <= bMinY <= cMaxY) and \
+        (cMinX <= bMaxX <= cMaxX) and \
+        (cMinY <= bMaxY <= cMaxY)):
+        return True
+    else:
+        for line in lines:
+            for x1,y1,x2,y2 in line:
+                if (isIntersect(line, bMinX, bMinY, bMaxX, bMaxY) == True):
+                    return True
+
+    return False
+
 #white color mask
 #img = cv2.imread('sample.png')
 #img = cv2.imread('a.jpg')
@@ -81,7 +96,7 @@ edges = cv2.Canny(blur_gray, low_threshold, high_threshold)
 rho = 1  # distance resolution in pixels of the Hough grid
 theta = np.pi / 180  # angular resolution in radians of the Hough grid
 threshold = 30  # minimum number of votes (intersections in Hough grid cell)
-min_line_length = 300  # minimum number of pixels making up a line
+min_line_length = 150  # minimum number of pixels making up a line
 max_line_gap = 20  # maximum gap in pixels between connectable line segments
 line_image = np.copy(img) * 0  # creating a blank to draw lines on
 
@@ -98,9 +113,13 @@ for line in lines:
 # Draw a test rectangle down on the image
 height, width, channels = line_image.shape
 offset = 25
-minX = width/2-offset
+#minX = width/2-offset
+#minY = height/2
+#maxX = width/2+offset
+#maxY = height/2+2*offset
+minX = offset #width - 2*offset
 minY = height/2
-maxX = width/2+offset
+maxX = width - offset
 maxY = height/2+2*offset
 
 # test rectangle to check for intersections
@@ -120,7 +139,11 @@ lines_edges = cv2.addWeighted(img, 0.8, line_image, 1, 0)
 
 cv2.imwrite('sample_y.png', lines_edges)
 
-for line in lines:
-    if (isIntersect(line, minX, minY, maxX, maxY) == True):
-        print("Intersection occurred")
+#for line in lines:
+#    if (isIntersect(line, minX, minY, maxX, maxY) == True):
+#        print("Intersection occurred")
 
+if (isInbound(lines,a,b,c,d,minX,minY,maxX,maxY) == True):
+    print("birdie is in bounds")
+else:
+    print("birdie is out of bounds")
